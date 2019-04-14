@@ -23,6 +23,7 @@ func projectResource(projectID string) string {
 // ------creates a custom metric specified by the metric type.----------------------------------------------------------
 
 func createCustomMetric(projectID, metricType string, clusterName string) error {
+	fmt.Printf("Metric Type - %s is created", metricType)
 	ctx := context.Background()
 	c, err := monitoring.NewMetricClient(ctx)
 	if err != nil {
@@ -65,13 +66,30 @@ func formatResource(resource interface{}) []byte {
 	return b
 }
 
-
+// -------------------Deletion of custom metric created ----------------------------------------------------------------
+func deleteMetric(projectID, metricType string) error {
+	fmt.Printf("Metric Type - %s gonna be deleted", metricType)
+	ctx := context.Background()
+	c, err := monitoring.NewMetricClient(ctx)
+	if err != nil {
+		return err
+	}
+	metricResource := "projects/" + projectID + "/metricDescriptors/" + metricType
+	req := &monitoringpb.DeleteMetricDescriptorRequest{
+		Name: metricResource,
+	}
+	err = c.DeleteMetricDescriptor(ctx, req)
+	if err != nil {
+		return fmt.Errorf("could not delete metric: %v", err)
+	}
+	log.Printf("Deleted metric: %q\n", metricType)
+	return nil
+}
 //----------------------------------------------------------------------------------------------------------------------
 func main(){
 
-	for i, a := range os.Args[3:] {
-		fmt.Printf("Argument %d is %s\n", i+1, a)
 		createCustomMetric(os.Args[2],metricType,os.Args[1])
-	}
+		//deleteMetric(os.Args[2], metricType)
+
 
 }
